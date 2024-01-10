@@ -8,12 +8,12 @@ This guide provides step-by-step instructions on setting up a TLS connection bet
 
 ### Step 1: Install the necessary tools
 ```
-$ ./install_tools.sh
+./install_tools.sh
 ```
 
 ### Step 2: Deploy the cert-manager, Issuers, and Postgres
 ```
-$ ./deploy.sh
+./deploy.sh
 ```
 If everything runs smoothly, the following resources should be created:
 ```
@@ -28,29 +28,30 @@ certificate.cert-manager.io/postgresql-tls created
 
 ### Step 3: Check node, deployment, service, issuer, certificate, and pod before verifying the TLS connection
 ```
-$ kubectl -n sandbox get node
-$ kubectl -n sandbox get deployment
-$ kubectl -n sandbox get service
-$ kubectl -n sandbox get issuer
-$ kubectl -n sandbox get certificate
-$ kubectl -n sandbox get pods
+kubectl -n sandbox get node
+kubectl -n sandbox get deployment
+kubectl -n sandbox get service
+kubectl -n sandbox get issuer
+kubectl -n sandbox get certificate
+kubectl -n sandbox get secret
+kubectl -n sandbox get pods
 ... 
 ```
 
 ### Step 4: Get the trust anchor ca.crt and save it to a file
 ```
-$ kubectl -n sandbox get secret postgresql-tls-secret -o jsonpath='{.data.ca\.crt}' | base64 -d > ca.crt
+kubectl -n sandbox get secret postgresql-tls-secret -o jsonpath='{.data.ca\.crt}' | base64 -d > ca.crt
 ```
 
 ### Step 5: Verify local Kubernetes cluster IP and update psql commands correspondingly if not the same
 ```
-$ minikube ip
+minikube ip
 192.168.49.2
 ```
 
 ### Step 6: Verify TLS connection using psql and check settings
 ```
-$ psql "sslmode=verify-full sslrootcert=ca.crt dbname=postgres user=postgres hostaddr=192.168.49.2 port=32345 host=postgresql-service"
+psql "sslmode=verify-full sslrootcert=ca.crt dbname=postgres user=postgres hostaddr=192.168.49.2 port=32345 host=postgresql-service"
 psql (17devel, server 16.1 (Debian 16.1-1.pgdg120+1))
 SSL connection (protocol: TLSv1.3, cipher: TLS_AES_256_GCM_SHA384, compression: off)
 Type "help" for help.
@@ -78,7 +79,7 @@ postgres=#
 
 ### Step 7: Log into the Postgres pod and verify more...
 ```
-$ kubectl -n sandbox exec -it $(kubectl -n sandbox get pod -l app=postgresql -o jsonpath='{.items[0].metadata.name}') -- bash
+kubectl -n sandbox exec -it $(kubectl -n sandbox get pod -l app=postgresql -o jsonpath='{.items[0].metadata.name}') -- bash
 root@postgresql-64b859df66-l4lw5:/# apt update && apt install -y procps iputils-ping net-tools
 
 root@postgresql-64b859df66-l4lw5:/# ps -ef
@@ -97,10 +98,6 @@ Type "help" for help.
 
 postgres=#
 ```
-
-If you find this guide helpful, kindly consider giving it a star. Your support is greatly appreciated!
-
-Thank you!
 
 Feel free to make any further adjustments or let me know if you need more modifications!
 
